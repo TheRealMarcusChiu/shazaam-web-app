@@ -3,6 +3,7 @@
 - https://shazam.marcuschiu.com
 
 # Article
+
 - https://www.marcuschiu.com/tinkering/2025-08-18/
 
 # Other
