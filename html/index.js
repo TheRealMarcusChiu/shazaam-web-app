@@ -247,22 +247,24 @@ const specCanvas = document.getElementById('spec');
 const predefinedDemoDatabase = document.getElementById('start-base');
 predefinedDemoDatabase.addEventListener('click', async () => {
     predefinedDemoDatabase.disabled = true;
+    predefinedDemoDatabase.textContent = 'Demo Database Loading';
 
     const audioUrls = [
-      "audio/Charli XCX - forever [Official Video] [TbJE-KVZvTA].wav",
-      "audio/Charlotte Church, Traditional - What Child Is This - Greensleeves (Dormition Abbey 2000) [4s9ghpx-b3o].wav",
-      "audio/El-Shaddai [8txqw-u4V78].wav",
-      "audio/elijah who - hello [sTqR0MWN6e4].wav",
-      "audio/Let It Be [OLpSZmDiE1Y].wav",
-      "audio/Merry Christmas Mr. Lawrence ⧸ Ryuichi Sakamoto - From Ryuichi Sakamoto： Playing the Piano 2022 [z9tECKZ60zk].wav"
+      "audio/Charli XCX - forever [Official Video] [TbJE-KVZvTA].mp3",
+      "audio/Charlotte Church, Traditional - What Child Is This - Greensleeves (Dormition Abbey 2000) [4s9ghpx-b3o].mp3",
+      "audio/El-Shaddai [8txqw-u4V78].mp3",
+      "audio/elijah who - hello [sTqR0MWN6e4].mp3",
+      "audio/Let It Be [OLpSZmDiE1Y].mp3",
     ];
 
     for (const url of audioUrls) {
         const response = await fetch(url);
         const blob = await response.blob();
         const file = new File([blob], url.split("/").pop(), { type: blob.type });
-        processAudioFile(file);
+        await processAudioFile(file);
     }
+
+    predefinedDemoDatabase.textContent = 'Demo Database Loaded';
 });
 
 refFilesEl.addEventListener('change', async (e) => {

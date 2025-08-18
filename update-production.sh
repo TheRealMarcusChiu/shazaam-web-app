@@ -5,4 +5,4 @@ ssh aws << EOF
   mkdir shazam-webapp
 EOF
 
-scp -i ~/.ssh/keys/aws-marcuschiu.pem -r ./web ec2-user@www.marcuschiu.com:~/shazam-webapp
+scp -i ~/.ssh/keys/aws-marcuschiu.pem -r ./html ec2-user@www.marcuschiu.com:~/shazam-webapp
