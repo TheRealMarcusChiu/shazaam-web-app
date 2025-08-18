@@ -1,6 +1,6 @@
 #! /bin/bash
 
 ssh aws << EOF
-  cd shazam-web-app/
+  cd shazaam-web-app/
   git pull
 EOF
