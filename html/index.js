@@ -237,42 +237,110 @@ function bestMatch(queryHashes) {
     return { trackId, offset: off, votes: maxVotes };
 }
 
+
 // ======== UI: Reference Loading ========
 const refFilesEl = document.getElementById('refFiles');
 const refListEl = document.getElementById('refList');
-const statusEl = document.getElementById('status');
 const resultEl = document.getElementById('result');
 const specCanvas = document.getElementById('spec');
 
-let filesMe = null;
+const predefinedDemoDatabase = document.getElementById('start-base');
+predefinedDemoDatabase.addEventListener('click', async () => {
+    predefinedDemoDatabase.disabled = true;
 
-refFilesEl.addEventListener('change', async (e) => {
-    const files = [...e.target.files];
-    filesMe = files;
-    for (const file of files) {
-        const id = DB.tracks.length;
-        DB.tracks.push({id, name: file.name});
-        addRefRow(file.name, '… fingerprinting');
-        await sleep(5);
-        try {
-            const {data, rate} = await decodeFileToMono(file);
-            const fp = fingerprintFromSignal(data, rate);
-            addToDB(id, fp.hashes);
-            updateRefRow(file.name, `${fp.hashes.length} hashes`);
-        } catch(err) {
-            console.error(err);
-            updateRefRow(file.name, 'failed to decode', true);
-        }
+    const audioUrls = [
+      "audio/Charli XCX - forever [Official Video] [TbJE-KVZvTA].wav",
+      "audio/Charlotte Church, Traditional - What Child Is This - Greensleeves (Dormition Abbey 2000) [4s9ghpx-b3o].wav",
+      "audio/El-Shaddai [8txqw-u4V78].wav",
+      "audio/elijah who - hello [sTqR0MWN6e4].wav",
+      "audio/Let It Be [OLpSZmDiE1Y].wav",
+      "audio/Merry Christmas Mr. Lawrence ⧸ Ryuichi Sakamoto - From Ryuichi Sakamoto： Playing the Piano 2022 [z9tECKZ60zk].wav"
+    ];
+
+    for (const url of audioUrls) {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        const file = new File([blob], url.split("/").pop(), { type: blob.type });
+        processAudioFile(file);
     }
 });
 
-function addRefRow(name, right){
-  const n = document.createElement('div'); n.textContent = name; refListEl.appendChild(n);
-  const r = document.createElement('div'); r.textContent = right; r.dataset.rightFor = name; r.className='muted'; refListEl.appendChild(r);
+refFilesEl.addEventListener('change', async (e) => {
+    const files = [...e.target.files];
+    for (const file of files) {
+        await processAudioFile(file);
+    }
+});
+
+async function processAudioFile(file) {
+    const id = DB.tracks.length;
+    DB.tracks.push({id, name: file.name});
+    const audioURL = URL.createObjectURL(file);
+    const audio = new Audio(audioURL);
+    addRefRow(file.name, '… fingerprinting', audio);
+    await sleep(5);
+    try {
+        const {data, rate} = await decodeFileToMono(file);
+        const fp = fingerprintFromSignal(data, rate);
+        addToDB(id, fp.hashes);
+        updateRefRow(file.name, `${fp.hashes.length} hashes`);
+    } catch(err) {
+        console.error(err);
+        updateRefRow(file.name, 'failed to decode', true);
+    }
 }
-function updateRefRow(name, text, isErr=false){
-  const el = [...refListEl.children].find(x=>x.dataset && x.dataset.rightFor===name);
-  if (el){ el.textContent = text; el.className = isErr? 'muted' : 'ok'; }
+
+
+
+let curAudio = null;
+let curBtn = null;
+
+function addRefRow(name, right, audio) {
+    const n = document.createElement('div');
+    n.textContent = name;
+    n.className = 'file-name';
+    refListEl.appendChild(n);
+
+    const r = document.createElement('div');
+    r.textContent = right;
+    r.dataset.rightFor = name;
+    r.className = 'muted';
+    refListEl.appendChild(r);
+
+    const p = document.createElement('button');
+    p.className = 'btn-play';
+    p.textContent = '▶';
+    p.addEventListener('click', async () => {
+        if (audio.paused) {
+            await audio.play();
+            if (curAudio !== null) {
+                curAudio.pause();
+                curBtn.textContent = '▶';
+            }
+            curAudio = audio;
+            curBtn = p;
+            p.textContent = '⏸';
+        } else {
+            audio.pause();
+            curAudio = null;
+            curBtn = null;
+            p.textContent = '▶';
+        }
+    });
+    p.addEventListener('ended', () => {
+        p.textContent = '▶';
+        curAudio = null;
+        curBtn = null;
+    });
+    refListEl.appendChild(p);
+}
+
+function updateRefRow(name, text, isErr=false) {
+    const el = [...refListEl.children].find(x => x.dataset && x.dataset.rightFor === name);
+    if (el) {
+        el.textContent = text;
+        el.className = isErr? 'muted' : 'ok';
+    }
 }
 
 // ======== Recording (capture raw PCM via ScriptProcessor) ========
@@ -282,22 +350,44 @@ let recState = { collecting: false, data:[] };
 recordBtn.addEventListener('click', async () => {
     if (recState.collecting) return;
     try {
+        recordBtn.innerHTML = 'Listening…';
         const DURATION_SEC = 6;
-        statusEl.textContent = 'Mic permission…';
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        // Capture mic
+        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+        let stream = null;
+
+        if (curAudio !== null) {
+            // Capture audio element once
+            const audioStream = curAudio.captureStream();
+            const audioTrack = audioStream.getAudioTracks()[0]; // reuse this track
+
+            // combine into one stream
+            stream = new MediaStream([
+              ...micStream.getAudioTracks(),
+              audioTrack
+            ]);
+        } else {
+            stream = new MediaStream([
+                ...micStream.getAudioTracks()
+            ]);
+        }
+
+
         const ac = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: 48000 });
         const src = ac.createMediaStreamSource(stream);
         const proc = ac.createScriptProcessor(4096, 1, 1);
         recState = { collecting: true, data: [] };
         src.connect(proc);
         proc.connect(ac.destination);
-        statusEl.textContent = 'Listening…';
         const started = performance.now();
         proc.onaudioprocess = (e) => {
             if (!recState.collecting) return;
             const input = e.inputBuffer.getChannelData(0);
             recState.data.push(new Float32Array(input));
             if ((performance.now() - started) > (DURATION_SEC * 1000)) {
+                recordBtn.innerHTML = '🎤 Listen (6s)';
                 recState.collecting = false;
                 proc.disconnect();
                 src.disconnect();
@@ -307,8 +397,7 @@ recordBtn.addEventListener('click', async () => {
             }
         };
     } catch(err) {
-        console.error(err);
-        statusEl.textContent = 'Mic error: ' + err.message;
+        alert(err);
     }
 });
 
@@ -337,22 +426,18 @@ function drawSpectrogram(S){
 }
 
 async function processQuery(signal, rate) {
-    statusEl.textContent = 'Processing query…';
-    const fp = fingerprintFromSignal(signal, rate);
-    drawSpectrogram(fp.S);
     if (DB.tracks.length === 0 || DB.hashTable.size === 0) {
         resultEl.textContent = 'No reference library loaded. Add some tracks first.';
-        statusEl.textContent = 'Idle';
         return;
     }
+    const fp = fingerprintFromSignal(signal, rate);
+    drawSpectrogram(fp.S);
     const match = bestMatch(fp.hashes);
     if (!match) {
         resultEl.textContent = 'No match found.';
-        statusEl.textContent='Idle';
         return;
     }
     const track = DB.tracks[match.trackId];
     const conf = match.votes;
     resultEl.innerHTML = `<b>Match:</b> ${track.name} <span class="muted">(votes ${conf})</span>`;
-    statusEl.textContent = 'Done';
 }

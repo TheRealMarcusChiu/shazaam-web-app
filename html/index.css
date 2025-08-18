@@ -1,14 +1,128 @@
-:root{color-scheme:dark;}
-body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial; background:#0b1020; color:#e6ecff}
-.wrap{max-width:1100px;margin:0 auto;padding:24px}
-.glass{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(12px) saturate(140%);border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
-.row{display:flex;gap:16px;flex-wrap:wrap}
-.card{padding:16px}
-button{appearance:none;border:0;border-radius:999px;padding:12px 18px;background:linear-gradient(135deg,#4f46e5,#06b6d4);color:white;font-weight:600;cursor:pointer}
-button:disabled{opacity:.6;cursor:not-allowed}
-.muted{color:#9db0ff}
-.list{display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center;font-size:14px}
-.ok{color:#7cf29c}
-canvas{display:block;background:#0a0f1c;border-radius:14px}
-code{background:#0e1630;color:#a5b4fc;padding:2px 6px;border-radius:6px}
-.pill{display:inline-block;padding:2px 8px;border:1px solid #334; border-radius:999px; font-size:12px; color:#a5b}
+/* Reset (tiny) */
+*,*::before,*::after{box-sizing:border-box}
+:where(html){-webkit-text-size-adjust:100%;text-size-adjust:100%}
+:where(body){margin:0;line-height:1.5}
+:where(img,svg){display:block;max-width:100%}
+:where(p,h1,h2){margin:0}
+
+body {
+  min-height: 100dvh;
+  display:grid; place-items:center;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  color:#0b0b0f;
+  padding: 40px;
+  background: radial-gradient(1200px 800px at 20% 10%, #a7c5fd 0%, transparent 60%),
+              radial-gradient(1000px 600px at 80% 90%, #fdb7d6 0%, transparent 60%),
+              linear-gradient(180deg, #eef2f7 0%, #f6f8fb 100%);
+}
+
+.glass {
+    width: min(92vw,720px);
+    padding: clamp(1.2rem, 3vw, 2rem);
+    border-radius: 20px;
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 10px 40px rgba(16,24,40,.06);
+}
+
+h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    text-align: center;
+    opacity: 0.80;
+}
+
+h2 {
+    font-size: 1.4rem;
+    margin-top: 40px;
+    opacity: 0.70;
+    text-align: center;
+}
+
+p {
+    text-align: center;
+    opacity: .6;
+    margin-top: .4rem
+}
+
+.btn {
+    appearance: none;
+    border: none;
+    color: black;
+    border-radius: 12px;
+    padding: 10px 16px;
+    margin: 8px 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+    opacity: 0.60;
+    box-shadow: 0 4px 16px rgba(0,0,0,.12);
+}
+.btn:hover {
+    background: rgba(255, 255, 255, 0.6);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 26px rgba(0,0,0,.18);
+}
+
+.file-name {
+    white-space: nowrap;       /* prevent wrapping */
+    overflow: hidden;          /* hide overflow */
+    text-overflow: ellipsis;   /* show "..." if text is too long */
+}
+.btn-play {
+    appearance: none;
+    border: none;
+    color: black;
+    border-radius: 5px;
+    padding: 6px 16px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+    opacity: 1.0;
+    box-shadow: 0 4px 16px rgba(0,0,0,.12);
+}
+.btn-play:hover {
+    background: rgba(255, 255, 255, 0.6);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 26px rgba(0,0,0,.18);
+}
+
+input {
+    display: none;
+}
+
+.list {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 6px 12px;
+    align-items: center;
+    font-size: 14px;
+    opacity: 0.60;
+
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.ok {
+    color: green;
+    text-align: right;
+}
+
+canvas {
+    display: block;
+    background: #0a0f1c;
+    border-radius: 10px;
+    width: 100%;   /* scales with div */
+    height: 100%;  /* scales with div */
+    display: block;
+}

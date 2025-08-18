@@ -8,45 +8,37 @@
     <script src="index.js" defer></script>
 </head>
 <body>
+
 <div class="wrap">
-    <h1>Local Shazam <span class="pill">Pure JavaScript</span></h1>
-    <p class="muted">All recognition happens locally in your browser. No API key, no third‑party calls. Uses FFT + spectrogram + peak hashing.</p>
+    <main class="glass" role="main" aria-labelledby="title">
+        <h1>Local Shazam</h1>
+        <p>All recognitions happen locally in your browser. No API key, no third‑party calls. Uses FFT + spectrogram + peak hashing.</p>
 
-    <div class="row">
-        <div class="glass card" style="flex: 1; min-width: 300px">
-            <h3>1) Build a local reference library</h3>
-            <input id="refFiles" type="file" accept="audio/*" multiple />
-            <p class="muted" style="margin: 8px 0 0">Tip: add short clips (~30–60s). The app fingerprints them locally.</p>
-            <div id="refList" class="list" style="margin-top: 10px"></div>
+        <!-- Build Reference Library -->
+        <div>
+            <h2>1) Build Song Database</h2>
+            <p>Choose preselected songs and/or upload own songs to learn from</p>
+            <div style="text-align: center">
+                <button class="btn" id="start-base">Upload Demo Database</button>
+                <input id="refFiles" type="file" accept="audio/*" multiple />
+                <label class="btn" for="refFiles" class="upload-btn">Upload Songs</label>
+            </div>
+            <div id="refList" class="list"></div>
         </div>
 
-        <div class="glass card" style="flex:1;min-width:300px">
-            <h3>2) Identify a recording</h3>
-            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
-                <button id="recordBtn">🎙️ Listen (6s)</button>
-                <span id="status" class="muted">Idle</span>
+        <!-- Identify Recording -->
+        <div>
+            <h2>2) Identify a Song</h2>
+            <div style="text-align:center;">
+                <button class="btn" id="recordBtn">🎤 Listen (6s)</button>
             </div>
-            <div style="margin-top: 10px">
-                <canvas id="spec" width="800" height="260"></canvas>
+            <div id="result" style="margin-top: 10px; text-align: center;"></div>
+            <div style="margin-top: 10px; width: 100%; height: 300px;">
+                <canvas id="spec"></canvas>
             </div>
-            <div id="result" style="margin-top: 10px"></div>
         </div>
-    </div>
 
-    <div class="glass card" style="margin-top: 16px">
-        <h3>How it works</h3>
-        <ol>
-            <li>Decode audio to PCM → downsample to 11025 Hz.</li>
-            <li>Frame into windows (N=2048, hop=512), apply Hann window.</li>
-            <li>FFT → magnitude → log scale → spectrogram.</li>
-            <li>Peak picking (top local maxima per frame). Pair peaks within a time window to form hashes: <code>(f1,f2,Δt)</code>.</li>
-            <li>Store a hash table: <code>hash → [{trackId, tRef}]</code>.</li>
-            <li>For a query clip, compute hashes and tally <code>offset = tRef - tQuery</code> votes per track. Best (track,offset) wins.</li>
-        </ol>
-    </div>
+    </main>
 </div>
-
-<script>
-</script>
 </body>
 </html>
