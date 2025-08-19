@@ -7,23 +7,20 @@ function hann(N) {
     }
     return w;
 }
-function nextPow2(v) {
-    return 1 << Math.ceil(Math.log2(v));
-}
 
 // Simple in-place Radix-2 Cooley–Tukey Discrete FFT for real input (separate re,im)
 function fft(re, im) {
     const N = re.length;
     // bit-reverse
-    let j=0;
-    for (let i=0; i<N; i++) {
+    let j = 0;
+    for (let i = 0; i < N; i++) {
         if (i < j) {
-            const tr=re[i];
-            re[i]=re[j];
-            re[j]=tr;
-            const ti=im[i];
-            im[i]=im[j];
-            im[j]=ti;
+            const tr = re[i];
+            re[i] = re[j];
+            re[j] = tr;
+            const ti = im[i];
+            im[i] = im[j];
+            im[j] = ti;
         }
         let m = N>>1;
         while (m >= 1 && j >= m) {
